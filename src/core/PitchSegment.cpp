@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "PitchSegment.hpp"
-#include "RubberbandWrapper.hpp"
+#include "RubberbandHelper.hpp"
 
 namespace shone::core 
 {
@@ -19,7 +19,7 @@ namespace shone::core
         auto rubberBandStretcher = RubberBand::RubberBandStretcher{
             static_cast<size_t>(m_sampleRate), static_cast<size_t>(m_numChannels)};
         rubberBandStretcher.setPitchScale(std::pow(2, numSemitones / 12.0f));
-        m_frames = RubberbandWrapper::executeRubberband(rubberBandStretcher, m_frames, m_sampleRate, m_numChannels);
+        m_frames = RubberbandHelper::executeRubberband(rubberBandStretcher, m_frames, m_sampleRate, m_numChannels);
     }
 
     void PitchSegment::append(const std::vector<AudioFrame>& newFrames) 
