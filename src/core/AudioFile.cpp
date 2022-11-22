@@ -52,7 +52,7 @@ namespace shone::core
         if (currentBPM == newBPM) { return; }
         if (newBPM == 0) { throw std::logic_error("AudioFile.cpp: New BPM cannot be 0."); }
 
-        auto rubberBandStretcher = RubberBand::RubberBandStretcher{m_sampleRate, m_numChannels};
+        auto rubberBandStretcher = RubberBand::RubberBandStretcher{static_cast<size_t>(m_sampleRate), static_cast<size_t>(m_numChannels)};
         rubberBandStretcher.setTimeRatio(currentBPM / newBPM);
         m_audioFrames = RubberbandHelper::executeRubberband(rubberBandStretcher, m_audioFrames, m_sampleRate, m_numChannels);
     }
@@ -60,8 +60,8 @@ namespace shone::core
     void AudioFile::shiftPitch(int numCents) 
     {
         if (numCents == 0) { return; }
-        
-        auto rubberBandStretcher = RubberBand::RubberBandStretcher{m_sampleRate, m_numChannels};
+
+        auto rubberBandStretcher = RubberBand::RubberBandStretcher{static_cast<size_t>(m_sampleRate), static_cast<size_t>(m_numChannels)};
         rubberBandStretcher.setPitchScale(std::pow(2.0, (numCents / 100.0f) / 12.0f));
         m_audioFrames = RubberbandHelper::executeRubberband(rubberBandStretcher, m_audioFrames, m_sampleRate, m_numChannels);
     }
