@@ -1,12 +1,17 @@
-#include "PitchAnalyzer.hpp"
 #include <aubio/aubio.h>
+#include <cmath>
+#include <iostream>
+
+#include "PitchAnalyzer.hpp"
+#include "MusicalNote.hpp"
 
 namespace shone::core
 {
-    PitchAnalyzer::PitchAnalyzer(int sampleRate, int windowSize, int hopSize) :
+    PitchAnalyzer::PitchAnalyzer(int sampleRate, float referenceFrequency, int windowSize, int hopSize) :
         m_aubioPitch(new_aubio_pitch("default", windowSize, hopSize, sampleRate)),
         m_inputBuffer(new_fvec(hopSize)),
         m_outputBuffer(new_fvec(1)),
+        m_referenceFrequency(referenceFrequency),
         m_windowSize(windowSize),
         m_hopSize(hopSize) {}
 
@@ -17,25 +22,42 @@ namespace shone::core
         del_fvec(m_outputBuffer);
     }
 
-    void PitchAnalyzer::analyzePitch(AudioFile& audioFile) 
+    std::vector<PitchSegment> PitchAnalyzer::analyzePitch(AudioFile& audioFile) 
     {
-        m_pitchSegments.clear();
+        std::vector<PitchSegment> pitchSegments{};
+        const auto monoSignal = audioFile.mixToMono();
+        const auto& audioFrames = audioFile.audioFrames();
+        const auto totalHops = monoSignal.size() / m_hopSize;
+        const auto sampleRate = audioFile.sampleRate();
+        const auto numChannels = audioFile.numChannels();
 
-        auto monoSignal = audioFile.mixToMono();
-        for (int i = 0; i < monoSignal.size(); ++i) 
+        for (int i = 0; i < totalHops; ++i)
         {
-            if (i % m_hopSize == 0) 
+            for (int sampleIndex = 0; sampleIndex < m_hopSize; ++sampleIndex) 
             {
-                aubio_pitch_do(m_aubioPitch, m_inputBuffer, m_outputBuffer);
-                auto frequency = fvec_get_sample(m_outputBuffer, 0);
-                //...
-                fvec_zeros(m_inputBuffer);
+                fvec_set_sample(m_inputBuffer, monoSignal[m_hopSize * i + sampleIndex], sampleIndex);
             }
-            else 
+
+            aubio_pitch_do(m_aubioPitch, m_inputBuffer, m_outputBuffer);
+
+            auto frequency = fvec_get_sample(m_outputBuffer, 0);
+            if (frequency == 0) { continue; }
+
+            auto pitchFrames = std::vector<AudioFrame>{audioFrames[m_hopSize * i], audioFrames[m_hopSize * i + m_hopSize]};\
+            auto musicalNote = MusicalNote{frequency};
+            
+            //Can we merge this segment with the most recent one? (WIP, confusion with cent differences between segments)
+            if (!pitchSegments.empty() && pitchSegments.back().pitch() == musicalNote.note()) 
             {
-                fvec_set_sample(m_inputBuffer, monoSignal[i], i);
+                pitchSegments.back().append(pitchFrames);
+            }
+            else
+            {
+                pitchSegments.emplace_back(pitchFrames, musicalNote.note(), sampleRate, numChannels);
             }
         }
+
+        return pitchSegments;
     }
 
 }

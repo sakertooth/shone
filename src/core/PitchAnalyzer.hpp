@@ -8,16 +8,17 @@ namespace shone::core
     class PitchAnalyzer
     {
     public:
-        PitchAnalyzer(int sampleRate, int windowSize = 4096, int hopSize = 32);
+        PitchAnalyzer(int sampleRate, float referenceFrequency = 440.0f, int windowSize = 2048, int hopSize = 256);
         ~PitchAnalyzer();
 
-        void analyzePitch(AudioFile& audioFile);
+        std::vector<PitchSegment> analyzePitch(AudioFile& audioFile);
     private:
-        std::vector<PitchSegment> m_pitchSegments;
         aubio_pitch_t* m_aubioPitch;
         fvec_t* m_inputBuffer;
         fvec_t* m_outputBuffer;
+        float m_referenceFrequency;
         int m_windowSize;
         int m_hopSize;
+        int m_sampleRate;
     };
 }
