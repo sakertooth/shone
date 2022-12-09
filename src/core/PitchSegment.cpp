@@ -1,14 +1,12 @@
+#include "PitchSegment.hpp"
+
 #include <rubberband/RubberBandStretcher.h>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
-
-#include "PitchSegment.hpp"
-#include "RubberbandHelper.hpp"
-
 namespace shone::core 
 {
-    PitchSegment::PitchSegment(const std::vector<AudioFrame>& frames, MusicalNote::Note pitch, int sampleRate, int numChannels) 
+    PitchSegment::PitchSegment(const std::vector<StereoFrame>& frames, MusicalNote::Note pitch, int sampleRate, int numChannels) 
     : m_frames(frames),
     m_pitch(pitch),
     m_sampleRate(sampleRate),
@@ -16,18 +14,15 @@ namespace shone::core
 
     void PitchSegment::shiftPitch(int numSemitones)
     {
-        auto rubberBandStretcher = RubberBand::RubberBandStretcher{
-            static_cast<size_t>(m_sampleRate), static_cast<size_t>(m_numChannels)};
-        rubberBandStretcher.setPitchScale(std::pow(2, numSemitones / 12.0f));
-        m_frames = RubberbandHelper::executeRubberband(rubberBandStretcher, m_frames, m_sampleRate, m_numChannels);
+       // TODO
     }
 
-    void PitchSegment::append(const std::vector<AudioFrame>& newFrames) 
+    void PitchSegment::append(const std::vector<StereoFrame>& newFrames) 
     {
         m_frames.insert(m_frames.end(), newFrames.begin(), newFrames.end());
     }
 
-    const std::vector<AudioFrame>& PitchSegment::audioFrames() const 
+    const std::vector<StereoFrame>& PitchSegment::audioFrames() const 
     {
         return m_frames;
     }
