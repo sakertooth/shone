@@ -9,11 +9,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 add_executable(shone src/Main.cpp 
     src/core/AudioFile.cpp
-    src/core/AudioFrame.cpp
+    src/core/Mix.cpp
     src/core/PitchAnalyzer.cpp
-    src/core/PitchSegment.cpp
     src/core/MusicalNote.cpp
-    src/core/SndFileHelper.cpp)
+    src/core/PitchSegment.cpp)
     
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/portaudio)
 
