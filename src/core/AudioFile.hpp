@@ -1,5 +1,5 @@
 #pragma once
-#include "AudioFrame.hpp"
+#include "StereoFrame.hpp"
 
 #include <vector>
 #include <filesystem>
@@ -7,23 +7,23 @@
 
 namespace shone::core
 {
-    class AudioFile
+    class AudioFile 
     {
     public:
-        AudioFile(const std::filesystem::path& filepath);
-        
-        std::vector<float> mixToMono();
-        void shiftBPM(int currentBPM, int newBPM);
-        void shiftPitch(int numCents);
+        AudioFile(const std::filesystem::path& filePath);
+
         void writeToDisk(const std::filesystem::path& outputFilePath);
-        
-        const std::vector<AudioFrame>& audioFrames() const;
+
+        const std::filesystem::path filePath() const;
+        const std::vector<StereoFrame>& audioFrames() const;
         int sampleRate() const;
-        int numChannels() const;
+
+    private:
+        std::pair<SNDFILE*, SF_INFO> openAudioFile(const std::filesystem::path& filePath, int mode);
+
     private:
         std::filesystem::path m_filePath;
-        std::vector<AudioFrame> m_audioFrames;
-        int m_sampleRate;
-        int m_numChannels;
+        std::vector<StereoFrame> m_audioFrames;
+        int m_sampleRate = 0;
     };
 }

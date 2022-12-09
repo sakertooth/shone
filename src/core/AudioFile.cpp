@@ -4,78 +4,52 @@
 #include <cmath>
 
 #include "AudioFile.hpp"
-#include "SndFileHelper.hpp"
-#include "RubberbandHelper.hpp"
+#include "Mix.hpp"
 
 namespace shone::core
 {
-    AudioFile::AudioFile(const std::filesystem::path& filepath) : m_filePath(filepath)
+    AudioFile::AudioFile(const std::filesystem::path& filePath) : m_filePath(filePath)
     {
-        auto [audioFile, audioInfo] = SndFileHelper::open(filepath, SFM_READ);
+        auto [audioFile, audioInfo] = openAudioFile(filePath, SFM_READ);
+        auto sampleData = std::vector<float>(audioInfo.frames * audioInfo.channels);
+        auto samplesRead = sf_read_float(audioFile, sampleData.data(), sampleData.size());
+
+        if (samplesRead != sampleData.size()) 
+        {
+            throw std::runtime_error{"Could not read all required samples in audio file"};
+        }
         
-        auto samples = std::vector<float>(audioInfo.frames * audioInfo.channels);
-        auto samples_read = sf_read_float(audioFile.get(), samples.data(), audioInfo.frames * audioInfo.channels);
-
-        if (samples_read != static_cast<size_t>(samples.size())) 
+        if (audioInfo.channels < 2) 
         {
-            throw std::runtime_error{"Could not read the required number of samples from the audio file."};
+            m_audioFrames = Mix::mixMonoToStereo(sampleData);
         }
-
-        auto audioFrames = std::vector<AudioFrame>{};
-        audioFrames.reserve(audioInfo.frames);
-        
-        for (int i = 0; i < samples.size(); i += audioInfo.channels)
+        else if (audioInfo.channels > 2)
         {
-            audioFrames.emplace_back(&samples[i], &samples[i + audioInfo.channels], audioInfo.channels);
+            m_audioFrames = Mix::mixDownToStereo(sampleData, audioInfo.channels);
         }
-
-        m_audioFrames = audioFrames;
-        m_sampleRate = audioInfo.samplerate;
-        m_numChannels = audioInfo.channels;
-    }
-
-    std::vector<float> AudioFile::mixToMono()
-    {
-        auto monoSignal = std::vector<float>{};
-        for (const auto& audioFrame : m_audioFrames)
+        else 
         {
-            const auto& samples = audioFrame.samples();
-            auto frameAverage = std::accumulate(samples.begin(), samples.end(), 0.0f) / samples.size();
-            monoSignal.push_back(frameAverage);
+            m_audioFrames = std::vector<StereoFrame>(audioInfo.frames);
+            std::copy(sampleData.begin(), sampleData.end(), m_audioFrames.begin()->data());
         }
-
-        return monoSignal;
-    }
-
-    void AudioFile::shiftBPM(int currentBPM, int newBPM) 
-    {
-        if (currentBPM == newBPM) { return; }
-        if (newBPM == 0) { throw std::logic_error("AudioFile.cpp: New BPM cannot be 0."); }
-
-        auto rubberBandStretcher = RubberBand::RubberBandStretcher{static_cast<size_t>(m_sampleRate), static_cast<size_t>(m_numChannels)};
-        rubberBandStretcher.setTimeRatio(currentBPM / newBPM);
-        m_audioFrames = RubberbandHelper::executeRubberband(rubberBandStretcher, m_audioFrames, m_sampleRate, m_numChannels);
-    }
-    
-    void AudioFile::shiftPitch(int numCents) 
-    {
-        if (numCents == 0) { return; }
-
-        auto rubberBandStretcher = RubberBand::RubberBandStretcher{static_cast<size_t>(m_sampleRate), static_cast<size_t>(m_numChannels)};
-        rubberBandStretcher.setPitchScale(std::pow(2.0, (numCents / 100.0f) / 12.0f));
-        m_audioFrames = RubberbandHelper::executeRubberband(rubberBandStretcher, m_audioFrames, m_sampleRate, m_numChannels);
+                
+        sf_close(audioFile);
     }
 
     void AudioFile::writeToDisk(const std::filesystem::path& outputFilePath) 
     {
-        auto [audioFile, audioInfo] = SndFileHelper::open(outputFilePath, SFM_WRITE);
-        for (auto& frame : m_audioFrames) 
-        {
-            sf_write_float(audioFile.get(), frame.samples().data(), frame.samples().size());
-        }
+        auto [audioFile, audioInfo] = openAudioFile(outputFilePath, SFM_WRITE);
+        sf_writef_float(audioFile, m_audioFrames.data()->data(),  m_audioFrames.size());
+        sf_write_sync(audioFile);
+        sf_close(audioFile);
     }
 
-    const std::vector<AudioFrame>& AudioFile::audioFrames() const 
+    const std::filesystem::path AudioFile::filePath() const 
+    {
+        return m_filePath;
+    }
+
+    const std::vector<StereoFrame>& AudioFile::audioFrames() const 
     {
         return m_audioFrames;
     }
@@ -84,9 +58,33 @@ namespace shone::core
     {
         return m_sampleRate;
     }
-    
-    int AudioFile::numChannels() const 
+
+    std::pair<SNDFILE*, SF_INFO> AudioFile::openAudioFile(const std::filesystem::path& filePath, int mode) 
     {
-        return m_numChannels;
+        auto nativeFilePath = filePath.c_str();
+        SNDFILE* audioFile = nullptr;
+        auto audioInfo = SF_INFO{};
+
+        if (std::is_same_v<std::filesystem::path::value_type, char>) 
+        {
+            audioFile = sf_open(nativeFilePath, mode, &audioInfo);
+        }
+        #ifdef WIN32
+        else if (std::is_same_v<std::filesystem::path::value_type, wchar_t>) 
+        {
+            audioFile = sf_wchar_open(nativeFilePath, mode, &audioInfo);
+        }
+        #endif
+        else 
+        {
+            throw std::domain_error{"Unknown/unsupported file path.\n"};
+        }
+
+        if (sf_error(audioFile)) 
+        {
+            throw std::runtime_error{std::string{"SndFile error in AudioFile::openAudioFile: "} + sf_strerror(audioFile)};
+        }
+
+        return {audioFile, audioInfo};
     }
 }
