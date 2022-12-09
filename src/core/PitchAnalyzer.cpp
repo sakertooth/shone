@@ -4,6 +4,7 @@
 
 #include "PitchAnalyzer.hpp"
 #include "MusicalNote.hpp"
+#include "Mix.hpp"
 
 namespace shone::core
 {
@@ -25,11 +26,11 @@ namespace shone::core
     std::vector<PitchSegment> PitchAnalyzer::analyzePitch(AudioFile& audioFile) 
     {
         std::vector<PitchSegment> pitchSegments{};
-        const auto monoSignal = audioFile.mixToMono();
+        const auto monoSignal = Mix::mixToMono(audioFile.audioFrames());
         const auto& audioFrames = audioFile.audioFrames();
         const auto totalHops = monoSignal.size() / m_hopSize;
         const auto sampleRate = audioFile.sampleRate();
-        const auto numChannels = audioFile.numChannels();
+        const auto numChannels = 2;
 
         for (int i = 0; i < totalHops; ++i)
         {
@@ -43,7 +44,7 @@ namespace shone::core
             auto frequency = fvec_get_sample(m_outputBuffer, 0);
             if (frequency == 0) { continue; }
 
-            auto pitchFrames = std::vector<AudioFrame>{audioFrames[m_hopSize * i], audioFrames[m_hopSize * i + m_hopSize]};\
+            auto pitchFrames = std::vector<StereoFrame>{audioFrames[m_hopSize * i], audioFrames[m_hopSize * i + m_hopSize]};
             auto musicalNote = MusicalNote{frequency};
             
             //Can we merge this segment with the most recent one? (WIP, confusion with cent differences between segments)
