@@ -7,10 +7,11 @@
 
 namespace shone::core
 {
-    class AudioFile 
+    class AudioBuffer 
     {
     public:
-        AudioFile(const std::filesystem::path& filePath);
+        AudioBuffer(const std::filesystem::path& filePath);
+        AudioBuffer(const std::size_t size);
 
         void writeToDisk(const std::filesystem::path& outputFilePath);
 
@@ -19,7 +20,7 @@ namespace shone::core
         int sampleRate() const;
 
     private:
-        std::pair<SNDFILE*, SF_INFO> openAudioFile(const std::filesystem::path& filePath, int mode);
+        std::pair<SNDFILE*, SF_INFO> openAudioHandle(const std::filesystem::path& filePath, int mode);
 
     private:
         std::filesystem::path m_filePath;

@@ -3,14 +3,16 @@
 #include <algorithm>
 #include <cmath>
 
-#include "AudioFile.hpp"
+#include "AudioBuffer.hpp"
 #include "Mix.hpp"
 
 namespace shone::core
 {
-    AudioFile::AudioFile(const std::filesystem::path& filePath) : m_filePath(filePath)
+    AudioBuffer::AudioBuffer(const std::size_t size) : m_audioFrames(size) {}
+
+    AudioBuffer::AudioBuffer(const std::filesystem::path& filePath) : m_filePath(filePath)
     {
-        auto [audioFile, audioInfo] = openAudioFile(filePath, SFM_READ);
+        auto [audioFile, audioInfo] = openAudioHandle(filePath, SFM_READ);
         auto sampleData = std::vector<float>(audioInfo.frames * audioInfo.channels);
         auto samplesRead = sf_read_float(audioFile, sampleData.data(), sampleData.size());
 
@@ -36,30 +38,30 @@ namespace shone::core
         sf_close(audioFile);
     }
 
-    void AudioFile::writeToDisk(const std::filesystem::path& outputFilePath) 
+    void AudioBuffer::writeToDisk(const std::filesystem::path& outputFilePath) 
     {
-        auto [audioFile, audioInfo] = openAudioFile(outputFilePath, SFM_WRITE);
+        auto [audioFile, audioInfo] = openAudioHandle(outputFilePath, SFM_WRITE);
         sf_writef_float(audioFile, m_audioFrames.data()->data(),  m_audioFrames.size());
         sf_write_sync(audioFile);
         sf_close(audioFile);
     }
 
-    const std::filesystem::path AudioFile::filePath() const 
+    const std::filesystem::path AudioBuffer::filePath() const 
     {
         return m_filePath;
     }
 
-    const std::vector<StereoFrame>& AudioFile::audioFrames() const 
+    const std::vector<StereoFrame>& AudioBuffer::audioFrames() const 
     {
         return m_audioFrames;
     }
     
-    int AudioFile::sampleRate() const 
+    int AudioBuffer::sampleRate() const 
     {
         return m_sampleRate;
     }
 
-    std::pair<SNDFILE*, SF_INFO> AudioFile::openAudioFile(const std::filesystem::path& filePath, int mode) 
+    std::pair<SNDFILE*, SF_INFO> AudioBuffer::openAudioHandle(const std::filesystem::path& filePath, int mode) 
     {
         auto nativeFilePath = filePath.c_str();
         SNDFILE* audioFile = nullptr;
@@ -82,7 +84,7 @@ namespace shone::core
 
         if (sf_error(audioFile)) 
         {
-            throw std::runtime_error{std::string{"SndFile error in AudioFile::openAudioFile: "} + sf_strerror(audioFile)};
+            throw std::runtime_error{std::string{"SndFile error in AudioBuffer::openAudioBuffer: "} + sf_strerror(audioFile)};
         }
 
         return {audioFile, audioInfo};

@@ -23,7 +23,7 @@ namespace shone::core
         del_fvec(m_outputBuffer);
     }
 
-    std::vector<PitchSegment> PitchAnalyzer::analyzePitch(AudioFile& audioFile) 
+    std::vector<PitchSegment> PitchAnalyzer::analyzePitch(AudioBuffer& audioFile) 
     {
         std::vector<PitchSegment> pitchSegments{};
         const auto monoSignal = Mix::mixToMono(audioFile.audioFrames());

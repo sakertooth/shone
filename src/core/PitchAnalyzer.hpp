@@ -1,5 +1,5 @@
 #pragma once
-#include "AudioFile.hpp"
+#include "AudioBuffer.hpp"
 #include "PitchSegment.hpp"
 #include <aubio/aubio.h>
 
@@ -11,7 +11,7 @@ namespace shone::core
         PitchAnalyzer(int sampleRate, float referenceFrequency = 440.0f, int windowSize = 2048, int hopSize = 256);
         ~PitchAnalyzer();
 
-        std::vector<PitchSegment> analyzePitch(AudioFile& audioFile);
+        std::vector<PitchSegment> analyzePitch(AudioBuffer& audioFile);
     private:
         aubio_pitch_t* m_aubioPitch;
         fvec_t* m_inputBuffer;
