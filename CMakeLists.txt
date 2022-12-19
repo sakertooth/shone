@@ -12,8 +12,7 @@ add_executable(shone src/Main.cpp
     src/core/Mix.cpp
     src/core/PitchAnalyzer.cpp
     src/core/MusicalNote.cpp
-    src/core/RubberbandHelper.cpp
-    src/core/SndFileHelper.cpp)
+    src/core/RubberbandHelper.cpp)
     
 find_package(SndFile REQUIRED)
 find_package(Aubio REQUIRED)
