@@ -7,32 +7,62 @@ namespace shone::core
     std::vector<AudioFrame> RubberbandHelper::executeRubberband(
         RubberBand::RubberBandStretcher& rubberBandStretcher, 
         const std::vector<AudioFrame>& audioFrames, 
-        int sampleRate, int numChannels) 
+        int blockSize)
     {
-        auto input = std::vector<const float*>{audioFrames.size()};
-        auto output = std::vector<float*>{audioFrames.size()};
+        auto deinterleavedAudio = deinterleaveAudio(audioFrames);
+        auto deinterleavedAudioPtr = std::vector<float*>(deinterleavedAudio.size() / 2);
 
-        std::transform(audioFrames.begin(), audioFrames.end(), input.begin(), [](auto& audioFrame)
+        for (int i = 0; i < static_cast<int>(deinterleavedAudio.size()); i += 2) 
         {
-            return audioFrame.samples().data();
-        });
-
-        rubberBandStretcher.study(input.data(), input.size(), true);
-        rubberBandStretcher.process(input.data(), input.size(), true);
-        if (rubberBandStretcher.available() != audioFrames.size()) 
-        {
-            throw std::runtime_error{"RubberbandHelper.cpp: Number of available frames does not match the original number of frames."};
-            
+            deinterleavedAudioPtr[i] = &deinterleavedAudio[i];
         }
 
-        rubberBandStretcher.retrieve(output.data(), output.size());
+        const auto [numBlocks, remainingFrames] = std::div(deinterleavedAudio.size(), blockSize);
+        auto frameBlocks = std::vector<std::vector<float*>>(numBlocks);
 
-        auto frames = std::vector<AudioFrame>{};
-        for (auto& frame : output) 
+        for (int i = 0; i < numBlocks; ++i) 
         {
-            frames.emplace_back(frame, frame + numChannels, numChannels);
+            const auto start = deinterleavedAudioPtr.begin() + i * blockSize;
+            const auto end = deinterleavedAudioPtr.begin() + i * blockSize + blockSize;
+            const auto frameBlock = std::vector<float*>(start, end);
+            rubberBandStretcher.study(frameBlock.data(), blockSize, i == numBlocks - 1);
+            frameBlocks.push_back(std::move(frameBlock));
         }
 
-        return frames;
+        for (int i = 0; i < numBlocks; ++i) 
+        {
+            rubberBandStretcher.process(frameBlocks[i].data(), blockSize, i == numBlocks - 1);
+        }
+
+        auto result = std::vector<AudioFrame>();
+        while (rubberBandStretcher.available() != 0) 
+        {
+            const auto retrievedFrameBlock = std::vector<float*>(blockSize);
+            rubberBandStretcher.retrieve(retrievedFrameBlock.data(), blockSize);
+
+            for (auto& frame : retrievedFrameBlock)
+            {
+                result.push_back(AudioFrame{frame[0], frame[1]});     
+            }
+        }
+
+        return result;
+    }
+
+    std::vector<float> RubberbandHelper::deinterleaveAudio(const std::vector<AudioFrame>& audioFrames) 
+    {
+        auto leftBuffer = std::vector<float>(audioFrames.size() / 2);
+        auto rightBuffer = std::vector<float>(audioFrames.size() / 2);
+        auto result = std::vector<float>(audioFrames.size());
+
+        for (auto& frame : audioFrames)
+        {
+            leftBuffer.push_back(frame[0]);
+            rightBuffer.push_back(frame[1]);
+        }
+        
+        std::copy(leftBuffer.begin(), leftBuffer.end(), result.begin());
+        std::copy(rightBuffer.begin(), rightBuffer.end(), result.begin() + leftBuffer.size());
+        return result;
     }
 }

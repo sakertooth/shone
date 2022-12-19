@@ -10,6 +10,8 @@ namespace shone::core
         static std::vector<AudioFrame> executeRubberband(
             RubberBand::RubberBandStretcher& rubberBandStretcher, 
             const std::vector<AudioFrame>& audioFrames, 
-            int sampleRate, int numChannels);
+            int blockSize = 2048);
+    
+        static std::vector<float> deinterleaveAudio(const std::vector<AudioFrame>& audioFrames);
     };
 }
