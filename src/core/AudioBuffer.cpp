@@ -34,7 +34,8 @@ namespace shone::core
             m_audioFrames = std::vector<AudioFrame>(audioInfo.frames);
             std::copy(sampleData.begin(), sampleData.end(), m_audioFrames.begin()->data());
         }
-                
+
+        m_sampleRate = audioInfo.samplerate;
         sf_close(audioFile);
     }
 
