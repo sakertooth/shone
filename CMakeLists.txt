@@ -11,6 +11,7 @@ add_executable(shone src/Main.cpp
     src/core/AudioBuffer.cpp
     src/core/Mix.cpp
     src/core/PitchAnalyzer.cpp
+    src/core/PitchSegment.cpp
     src/core/MusicalNote.cpp
     src/core/RubberbandHelper.cpp)
     
