@@ -3,9 +3,9 @@
 
 namespace shone::core 
 {
-    std::vector<StereoFrame> Mix::mixMonoToStereo(const std::vector<float>& data) 
+    std::vector<AudioFrame> Mix::mixMonoToStereo(const std::vector<float>& data) 
     {
-        auto result = std::vector<StereoFrame>(data.size());
+        auto result = std::vector<AudioFrame>(data.size());
         for (auto sample : data) 
         {
             result.push_back({sample, sample});
@@ -14,11 +14,11 @@ namespace shone::core
         return result;
     }
 
-    std::vector<StereoFrame> Mix::mixDownToStereo(const std::vector<float>& data, int numChannels) 
+    std::vector<AudioFrame> Mix::mixDownToStereo(const std::vector<float>& data, int numChannels) 
     {
         if (numChannels <= 2) { throw std::runtime_error{"Cannot mixdown signal: numChannels <= 2"}; }
         
-        auto result = std::vector<StereoFrame>(data.size() / numChannels);
+        auto result = std::vector<AudioFrame>(data.size() / numChannels);
         for (int i = 0; i < result.size(); i += numChannels) 
         {
             auto frame = std::vector<float>(numChannels);
@@ -36,13 +36,13 @@ namespace shone::core
             const auto stereoLeft = left + 0.707f * center - 0.707f * surroundLeft - 0.707f * surroundRight;
             const auto stereoRight = right + 0.707f * center - 0.707f * surroundLeft - 0.707f * surroundRight;
             
-            result.push_back(StereoFrame{stereoLeft, stereoRight});
+            result.push_back(AudioFrame{stereoLeft, stereoRight});
         }
 
         return result;
     }
 
-    std::vector<float> Mix::mixToMono(const std::vector<StereoFrame>& data) 
+    std::vector<float> Mix::mixToMono(const std::vector<AudioFrame>& data) 
     {
         auto result = std::vector<float>(data.size());
         for (auto frame : data) 

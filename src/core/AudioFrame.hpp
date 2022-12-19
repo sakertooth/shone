@@ -3,5 +3,5 @@
 
 namespace shone::core 
 {
-    using StereoFrame = std::array<float, 2>;
-} 
+    using AudioFrame = std::array<float, 2>;
+}

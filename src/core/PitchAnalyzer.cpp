@@ -44,7 +44,7 @@ namespace shone::core
             auto frequency = fvec_get_sample(m_outputBuffer, 0);
             if (frequency == 0) { continue; }
 
-            auto pitchFrames = std::vector<StereoFrame>{audioFrames[m_hopSize * i], audioFrames[m_hopSize * i + m_hopSize]};
+            auto pitchFrames = std::vector<AudioFrame>{audioFrames[m_hopSize * i], audioFrames[m_hopSize * i + m_hopSize]};
             auto musicalNote = MusicalNote{frequency};
             
             //Can we merge this segment with the most recent one? (WIP, confusion with cent differences between segments)

@@ -1,6 +1,5 @@
 #pragma once
-#include "StereoFrame.hpp"
-
+#include "AudioFrame.hpp"
 #include <vector>
 #include <filesystem>
 #include <sndfile.h>
@@ -16,7 +15,7 @@ namespace shone::core
         void writeToDisk(const std::filesystem::path& outputFilePath);
 
         const std::filesystem::path filePath() const;
-        const std::vector<StereoFrame>& audioFrames() const;
+        const std::vector<AudioFrame>& audioFrames() const;
         int sampleRate() const;
 
     private:
@@ -24,7 +23,7 @@ namespace shone::core
 
     private:
         std::filesystem::path m_filePath;
-        std::vector<StereoFrame> m_audioFrames;
+        std::vector<AudioFrame> m_audioFrames;
         int m_sampleRate = 0;
     };
 }

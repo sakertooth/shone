@@ -31,7 +31,7 @@ namespace shone::core
         }
         else 
         {
-            m_audioFrames = std::vector<StereoFrame>(audioInfo.frames);
+            m_audioFrames = std::vector<AudioFrame>(audioInfo.frames);
             std::copy(sampleData.begin(), sampleData.end(), m_audioFrames.begin()->data());
         }
                 
@@ -51,7 +51,7 @@ namespace shone::core
         return m_filePath;
     }
 
-    const std::vector<StereoFrame>& AudioBuffer::audioFrames() const 
+    const std::vector<AudioFrame>& AudioBuffer::audioFrames() const 
     {
         return m_audioFrames;
     }

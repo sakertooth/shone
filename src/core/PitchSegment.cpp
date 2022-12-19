@@ -6,7 +6,7 @@
 #include <iostream>
 namespace shone::core 
 {
-    PitchSegment::PitchSegment(const std::vector<StereoFrame>& frames, MusicalNote::Note pitch, int sampleRate, int numChannels) 
+    PitchSegment::PitchSegment(const std::vector<AudioFrame>& frames, MusicalNote::Note pitch, int sampleRate, int numChannels) 
     : m_frames(frames),
     m_pitch(pitch),
     m_sampleRate(sampleRate),
@@ -17,12 +17,12 @@ namespace shone::core
        // TODO
     }
 
-    void PitchSegment::append(const std::vector<StereoFrame>& newFrames) 
+    void PitchSegment::append(const std::vector<AudioFrame>& newFrames) 
     {
         m_frames.insert(m_frames.end(), newFrames.begin(), newFrames.end());
     }
 
-    const std::vector<StereoFrame>& PitchSegment::audioFrames() const 
+    const std::vector<AudioFrame>& PitchSegment::audioFrames() const 
     {
         return m_frames;
     }

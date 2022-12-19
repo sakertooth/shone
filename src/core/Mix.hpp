@@ -1,5 +1,5 @@
 #pragma once
-#include "StereoFrame.hpp"
+#include "AudioFrame.hpp"
 #include <vector>
 
 namespace shone::core 
@@ -7,8 +7,8 @@ namespace shone::core
     class Mix 
     {
     public:
-        static std::vector<StereoFrame> mixMonoToStereo(const std::vector<float>& data);
-        static std::vector<StereoFrame> mixDownToStereo(const std::vector<float>& data, int numChannels);
-        static std::vector<float> mixToMono(const std::vector<StereoFrame>& data);
+        static std::vector<AudioFrame> mixMonoToStereo(const std::vector<float>& data);
+        static std::vector<AudioFrame> mixDownToStereo(const std::vector<float>& data, int numChannels);
+        static std::vector<float> mixToMono(const std::vector<AudioFrame>& data);
     };
 }
