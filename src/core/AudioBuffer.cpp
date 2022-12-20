@@ -50,6 +50,7 @@ namespace shone::core
 
     AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames) : 
         m_audioFrames(audioFrames),
+        m_originalSampleRate(DEFAULT_SAMPLE_RATE),
         m_originalNumChannels(DEFAULT_NUM_CHANNELS)
     {}
 
