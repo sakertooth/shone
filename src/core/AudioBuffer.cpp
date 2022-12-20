@@ -12,7 +12,7 @@ namespace shone::core
     AudioBuffer::AudioBuffer(const std::size_t size) : 
         m_audioFrames(size),
         m_originalSampleRate(DEFAULT_SAMPLE_RATE),
-        m_originalNumChannels(DEFAULT_NUM_CHANNELS) {}
+        m_originalNumChannels(2) {}
 
     AudioBuffer::AudioBuffer(const std::filesystem::path& filePath) : m_filePath(filePath)
     {
@@ -26,18 +26,18 @@ namespace shone::core
             throw std::runtime_error{"Could not read all required samples in audio file"};
         }
         
-        if (audioInfo.channels < DEFAULT_NUM_CHANNELS) 
+        if (audioInfo.channels < 2) 
         {
             m_audioFrames = Mix::mixMonoToStereo(sampleData);
         }
-        else if (audioInfo.channels > DEFAULT_NUM_CHANNELS)
+        else if (audioInfo.channels > 2)
         {
             m_audioFrames = Mix::mixDownToStereo(sampleData, audioInfo.channels);
         }
         else 
         {
             m_audioFrames = std::vector<AudioFrame>(audioInfo.frames);
-            for (int i = 0; i < static_cast<int>(sampleData.size()); i += DEFAULT_NUM_CHANNELS)
+            for (int i = 0; i < static_cast<int>(sampleData.size()); i += 2)
             {
                 m_audioFrames.push_back(AudioFrame{sampleData[i], sampleData[i + 1]});
             }
@@ -51,14 +51,14 @@ namespace shone::core
     AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames) : 
         m_audioFrames(audioFrames),
         m_originalSampleRate(DEFAULT_SAMPLE_RATE),
-        m_originalNumChannels(DEFAULT_NUM_CHANNELS)
+        m_originalNumChannels(2)
     {}
 
     void AudioBuffer::writeToDisk(const std::filesystem::path& path, int format) 
     {
         auto audioInfo = SF_INFO{};
         audioInfo.format = format;
-        audioInfo.channels = DEFAULT_NUM_CHANNELS;
+        audioInfo.channels = 2;
         audioInfo.samplerate = DEFAULT_SAMPLE_RATE;
         
         auto audioFile = openAudioHandle(path, audioInfo, SFM_WRITE);
