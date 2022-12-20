@@ -5,7 +5,7 @@
 int main() 
 {
     auto audioBuffer = shone::core::AudioBuffer{"files/Sine_wave_440.wav"};
-    auto rubberBandStretcher = RubberBand::RubberBandStretcher{static_cast<size_t>(audioBuffer.originalSampleRate()), 2};
+    auto rubberBandStretcher = RubberBand::RubberBandStretcher{static_cast<size_t>(audioBuffer.sampleRate()), 2};
     rubberBandStretcher.setPitchScale(std::pow(2.0, 1 / 12.0));
 
     auto pithedBuffer = shone::core::RubberbandHelper::executeRubberband(rubberBandStretcher, audioBuffer.audioFrames());

@@ -11,7 +11,7 @@ namespace shone::core
 {
     AudioBuffer::AudioBuffer(const std::size_t size) : 
         m_audioFrames(size),
-        m_originalSampleRate(DEFAULT_SAMPLE_RATE),
+        m_sampleRate(DEFAULT_SAMPLE_RATE),
         m_originalNumChannels(2) {}
 
     AudioBuffer::AudioBuffer(const std::filesystem::path& filePath) : m_filePath(filePath)
@@ -43,14 +43,14 @@ namespace shone::core
             }
         }
 
+        m_sampleRate = audioInfo.samplerate;
         m_originalNumChannels = audioInfo.channels;
-        m_originalSampleRate = audioInfo.samplerate;
         sf_close(audioFile);
     }
 
     AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames) : 
         m_audioFrames(audioFrames),
-        m_originalSampleRate(DEFAULT_SAMPLE_RATE),
+        m_sampleRate(DEFAULT_SAMPLE_RATE),
         m_originalNumChannels(2)
     {}
 
@@ -59,7 +59,7 @@ namespace shone::core
         auto audioInfo = SF_INFO{};
         audioInfo.format = format;
         audioInfo.channels = 2;
-        audioInfo.samplerate = DEFAULT_SAMPLE_RATE;
+        audioInfo.samplerate = m_sampleRate;
         
         auto audioFile = openAudioHandle(path, audioInfo, SFM_WRITE);
         sf_writef_float(audioFile, m_audioFrames.data()->data(),  m_audioFrames.size());
@@ -104,9 +104,9 @@ namespace shone::core
         return m_audioFrames;
     }
     
-    int AudioBuffer::originalSampleRate() const 
+    int AudioBuffer::sampleRate() const 
     {
-        return m_originalSampleRate;
+        return m_sampleRate;
     }
 
     int AudioBuffer::originalNumChannels() const 
