@@ -10,7 +10,8 @@ int main()
     const auto audioBuffer = shone::core::AudioBuffer{filePath};
     
     assert(audioBuffer.filePath() == filePath);
-    assert(audioBuffer.sampleRate() == 132000);
+    assert(audioBuffer.originalSampleRate() == 132000);
+    assert(audioBuffer.originalNumChannels() == 1);
     assert(audioBuffer.audioFrames().size() == 660000 * 2);
-    assert(static_cast<int>(audioBuffer.audioFrames().size() / 2 / static_cast<double>(audioBuffer.sampleRate())) == 5);
+    assert(static_cast<int>(audioBuffer.audioFrames().size() / 2 / static_cast<double>(audioBuffer.originalSampleRate())) == 5);
 }
