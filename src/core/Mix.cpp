@@ -6,9 +6,9 @@ namespace shone::core
     std::vector<AudioFrame> Mix::mixMonoToStereo(const std::vector<float>& data) 
     {
         auto result = std::vector<AudioFrame>(data.size());
-        for (auto sample : data) 
+        for (size_t i = 0; i < result.size(); ++i) 
         {
-            result.push_back({sample, sample});
+            result[i] = AudioFrame{data[i], data[i]};
         }
 
         return result;
