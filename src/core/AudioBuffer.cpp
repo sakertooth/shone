@@ -11,7 +11,7 @@ namespace shone::core
 {
     AudioBuffer::AudioBuffer(const std::size_t size) : 
         m_audioFrames(size),
-        m_sampleRate(DEFAULT_SAMPLE_RATE),
+        m_originalSampleRate(DEFAULT_SAMPLE_RATE),
         m_originalNumChannels(2) {}
 
     AudioBuffer::AudioBuffer(const std::filesystem::path& filePath) : m_filePath(filePath)
@@ -37,29 +37,34 @@ namespace shone::core
         else 
         {
             m_audioFrames = std::vector<AudioFrame>(audioInfo.frames);
-            for (int i = 0; i < static_cast<int>(sampleData.size()); i += 2)
+            for (size_t i = 0; i < sampleData.size(); i += 2)
             {
-                m_audioFrames.push_back(AudioFrame{sampleData[i], sampleData[i + 1]});
+                m_audioFrames[i] = AudioFrame{sampleData[i], sampleData[i + 1]};
             }
         }
 
-        m_sampleRate = audioInfo.samplerate;
+        if (m_originalSampleRate != DEFAULT_SAMPLE_RATE) 
+        {
+            //TODO: Resampling to match sample rate of application..
+        }
+
+        m_originalSampleRate = audioInfo.samplerate;
         m_originalNumChannels = audioInfo.channels;
         sf_close(audioFile);
     }
 
     AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames) : 
         m_audioFrames(audioFrames),
-        m_sampleRate(DEFAULT_SAMPLE_RATE),
+        m_originalSampleRate(DEFAULT_SAMPLE_RATE),
         m_originalNumChannels(2)
     {}
 
-    void AudioBuffer::writeToDisk(const std::filesystem::path& path, int format) 
+    void AudioBuffer::writeToDisk(const std::filesystem::path& path, int format) const
     {
         auto audioInfo = SF_INFO{};
         audioInfo.format = format;
         audioInfo.channels = 2;
-        audioInfo.samplerate = m_sampleRate;
+        audioInfo.samplerate = m_originalSampleRate;
         
         auto audioFile = openAudioHandle(path, audioInfo, SFM_WRITE);
         sf_writef_float(audioFile, m_audioFrames.data()->data(),  m_audioFrames.size());
@@ -71,7 +76,7 @@ namespace shone::core
         return m_filePath;
     }
     
-    SNDFILE* AudioBuffer::openAudioHandle(const std::filesystem::path& filePath, SF_INFO& info, int mode) 
+    SNDFILE* AudioBuffer::openAudioHandle(const std::filesystem::path& filePath, SF_INFO& info, int mode) const
     {
         auto nativeFilePath = filePath.c_str();
         SNDFILE* audioFile = nullptr;
@@ -104,9 +109,9 @@ namespace shone::core
         return m_audioFrames;
     }
     
-    int AudioBuffer::sampleRate() const 
+    int AudioBuffer::originalSampleRate() const 
     {
-        return m_sampleRate;
+        return m_originalSampleRate;
     }
 
     int AudioBuffer::originalNumChannels() const 
