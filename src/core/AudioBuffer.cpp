@@ -9,13 +9,21 @@
 
 namespace shone::core
 {
-    AudioBuffer::AudioBuffer(const std::size_t size) : 
+    AudioBuffer::AudioBuffer(const std::size_t size, int sampleRate) : 
         m_audioFrames(size),
-        m_originalSampleRate(DEFAULT_SAMPLE_RATE),
+        m_sampleRate(sampleRate),
+        m_originalSampleRate(sampleRate),
         m_originalNumChannels(DEFAULT_NUM_CHANNELS) {}
 
-    AudioBuffer::AudioBuffer(const std::filesystem::path& filePath) : m_filePath(filePath)
+    AudioBuffer::AudioBuffer(const std::filesystem::path& filePath, int sampleRate) : 
+        m_filePath(filePath),
+        m_sampleRate(sampleRate)
     {
+        if (!std::filesystem::exists(filePath)) 
+        {
+            throw std::runtime_error{"AudioBuffer::AudioBuffer: filePath does not exist."};
+        }
+
         auto audioInfo = SF_INFO{};
         auto audioFile = openAudioHandle(filePath, audioInfo, SFM_READ);
         auto sampleData = std::vector<float>(audioInfo.frames * audioInfo.channels);
@@ -53,9 +61,10 @@ namespace shone::core
         sf_close(audioFile);
     }
 
-    AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames) : 
+    AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames, int sampleRate) : 
         m_audioFrames(audioFrames),
-        m_originalSampleRate(DEFAULT_SAMPLE_RATE),
+        m_sampleRate(sampleRate),
+        m_originalSampleRate(sampleRate),
         m_originalNumChannels(DEFAULT_NUM_CHANNELS)
     {}
 
@@ -64,7 +73,7 @@ namespace shone::core
         auto audioInfo = SF_INFO{};
         audioInfo.format = format;
         audioInfo.channels = DEFAULT_NUM_CHANNELS;
-        audioInfo.samplerate = DEFAULT_SAMPLE_RATE;
+        audioInfo.samplerate = m_sampleRate;
         
         auto audioFile = openAudioHandle(path, audioInfo, SFM_WRITE);
         sf_writef_float(audioFile, m_audioFrames.data()->data(),  m_audioFrames.size());
