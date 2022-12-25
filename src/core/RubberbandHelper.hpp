@@ -13,5 +13,7 @@ namespace shone::core
             int blockSize = 2048);
     
         static std::vector<float> deinterleaveAudio(const std::vector<AudioFrame>& audioFrames);
+        static std::vector<AudioFrame> interleaveAudio(std::vector<float>& samples);
+        static std::vector<float*> floatPtrBins(std::vector<float>& samples);
     };
 }
