@@ -20,6 +20,7 @@ namespace shone::core
             throw std::runtime_error{"AudioFile::AudioFile: # of samples read does not match the expected amount."};
         }
 
+        m_numFrames = audioInfo.frames;
         m_sampleRate = audioInfo.samplerate;
         m_numChannels = audioInfo.channels;
     }
@@ -32,6 +33,11 @@ namespace shone::core
     const std::filesystem::path& AudioFile::filePath() const 
     {
         return m_filePath;
+    }
+
+    int AudioFile::numFrames() const 
+    {
+        return m_numFrames;
     }
 
     int AudioFile::sampleRate() const 
