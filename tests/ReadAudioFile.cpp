@@ -1,5 +1,5 @@
-#include "RubberbandHelper.hpp"
-#include "AudioBuffer.hpp"
+#include "shone/RubberbandHelper.hpp"
+#include "shone/AudioBuffer.hpp"
 #include <cassert>
 #include <iostream>
 

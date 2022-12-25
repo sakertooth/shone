@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <cmath>
 
-#include "AudioBuffer.hpp"
-#include "Defaults.hpp"
-#include "Mix.hpp"
+#include "shone/AudioBuffer.hpp"
+#include "shone/Defaults.hpp"
+#include "shone/Mix.hpp"
 
 namespace shone::core
 {
