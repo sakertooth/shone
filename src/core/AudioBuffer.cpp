@@ -85,6 +85,21 @@ namespace shone::core
         return m_filePath;
     }
     
+    const std::vector<AudioFrame>& AudioBuffer::audioFrames() const 
+    {
+        return m_audioFrames;
+    }
+    
+    int AudioBuffer::originalSampleRate() const 
+    {
+        return m_originalSampleRate;
+    }
+
+    int AudioBuffer::originalNumChannels() const 
+    {
+        return m_originalNumChannels;
+    }
+    
     SNDFILE* AudioBuffer::openAudioHandle(const std::filesystem::path& filePath, SF_INFO& info, int mode) const
     {
         auto nativeFilePath = filePath.c_str();
@@ -113,18 +128,4 @@ namespace shone::core
         return audioFile;
     }
 
-    const std::vector<AudioFrame>& AudioBuffer::audioFrames() const 
-    {
-        return m_audioFrames;
-    }
-    
-    int AudioBuffer::originalSampleRate() const 
-    {
-        return m_originalSampleRate;
-    }
-
-    int AudioBuffer::originalNumChannels() const 
-    {
-        return m_originalNumChannels;
-    }
 }
