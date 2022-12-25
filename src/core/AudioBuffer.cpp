@@ -12,7 +12,7 @@ namespace shone::core
     AudioBuffer::AudioBuffer(const std::size_t size) : 
         m_audioFrames(size),
         m_originalSampleRate(DEFAULT_SAMPLE_RATE),
-        m_originalNumChannels(2) {}
+        m_originalNumChannels(DEFAULT_NUM_CHANNELS) {}
 
     AudioBuffer::AudioBuffer(const std::filesystem::path& filePath) : m_filePath(filePath)
     {
@@ -26,18 +26,18 @@ namespace shone::core
             throw std::runtime_error{"Could not read all required samples in audio file"};
         }
         
-        if (audioInfo.channels < 2) 
+        if (audioInfo.channels < DEFAULT_NUM_CHANNELS) 
         {
             m_audioFrames = Mix::mixMonoToStereo(sampleData);
         }
-        else if (audioInfo.channels > 2)
+        else if (audioInfo.channels > DEFAULT_NUM_CHANNELS)
         {
             m_audioFrames = Mix::mixDownToStereo(sampleData, audioInfo.channels);
         }
         else 
         {
             m_audioFrames = std::vector<AudioFrame>(audioInfo.frames);
-            for (size_t i = 0; i < sampleData.size(); i += 2)
+            for (size_t i = 0; i < sampleData.size(); i += DEFAULT_NUM_CHANNELS)
             {
                 m_audioFrames[i] = AudioFrame{sampleData[i], sampleData[i + 1]};
             }
@@ -56,15 +56,15 @@ namespace shone::core
     AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames) : 
         m_audioFrames(audioFrames),
         m_originalSampleRate(DEFAULT_SAMPLE_RATE),
-        m_originalNumChannels(2)
+        m_originalNumChannels(DEFAULT_NUM_CHANNELS)
     {}
 
     void AudioBuffer::writeToDisk(const std::filesystem::path& path, int format) const
     {
         auto audioInfo = SF_INFO{};
         audioInfo.format = format;
-        audioInfo.channels = 2;
-        audioInfo.samplerate = m_originalSampleRate;
+        audioInfo.channels = DEFAULT_NUM_CHANNELS;
+        audioInfo.samplerate = DEFAULT_SAMPLE_RATE;
         
         auto audioFile = openAudioHandle(path, audioInfo, SFM_WRITE);
         sf_writef_float(audioFile, m_audioFrames.data()->data(),  m_audioFrames.size());
