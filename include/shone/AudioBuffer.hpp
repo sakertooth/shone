@@ -15,7 +15,6 @@ namespace shone::core
         AudioBuffer(const std::vector<float>& samples, int sampleRate, int numChannels);
         AudioBuffer(size_t size, int sampleRate, int numChannels);
 
-        void applyStretcher(const RubberBand::RubberBandStretcher& stretcher, int from, int to);
         void writeToDisk(std::filesystem::path& filePath, int mode);
         void resample(int newSampleRate, int interpolatonMode = SRC_SINC_MEDIUM_QUALITY);
         void mix(int newNumChannels);

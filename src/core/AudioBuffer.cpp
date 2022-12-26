@@ -30,11 +30,6 @@ namespace shone::core
 
     }
 
-    void AudioBuffer::applyStretcher(const RubberBand::RubberBandStretcher& stretcher, int from, int to)
-    {
-        
-    }
-
     void AudioBuffer::writeToDisk(std::filesystem::path& filePath, int mode)
     {
 
