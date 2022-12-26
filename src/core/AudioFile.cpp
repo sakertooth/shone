@@ -1,4 +1,5 @@
 #include "shone/AudioFile.hpp"
+#include "shone/SndFileHelper.hpp"
 
 namespace shone::core 
 {
@@ -10,7 +11,7 @@ namespace shone::core
         }
 
         auto audioInfo = SF_INFO{};
-        auto audioHandle = openAudioHandle(filePath, audioInfo, SFM_READ);
+        auto audioHandle = SndFileHelper::openAudioHandle(filePath, audioInfo, SFM_READ);
         
         m_samples = std::vector<float>(audioInfo.frames * audioInfo.channels);
         const size_t samplesRead = sf_read_float(audioHandle, m_samples.data(), m_samples.size());
@@ -48,33 +49,5 @@ namespace shone::core
     int AudioFile::numChannels() const 
     {
         return m_numChannels;
-    }
-
-    SNDFILE* AudioFile::openAudioHandle(const std::filesystem::path& filePath, SF_INFO& info, int mode) const 
-    {
-        auto nativeFilePath = filePath.c_str();
-        SNDFILE* audioFile = nullptr;
-        
-        if (std::is_same_v<std::filesystem::path::value_type, char>) 
-        {
-            audioFile = sf_open(nativeFilePath, mode, &info);
-        }
-        #ifdef WIN32
-        else if (std::is_same_v<std::filesystem::path::value_type, wchar_t>) 
-        {
-            audioFile = sf_wchar_open(nativeFilePath, mode, &info);
-        }
-        #endif
-        else 
-        {
-            throw std::domain_error{"AudioFile::AudioFile: Unknown/unsupported file path.\n"};
-        }
-
-        if (sf_error(audioFile))
-        {
-            throw std::runtime_error{std::string{"AudioFile::AudioFile: SndFile error, "} + sf_strerror(audioFile)};
-        }
-
-        return audioFile;
     }
 }
