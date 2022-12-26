@@ -25,6 +25,5 @@ namespace shone::core
         std::vector<float> m_samples;
         int m_sampleRate = 0;
         int m_numChannels = 0;
-        int m_numFrames = 0;
     };
 }
