@@ -1,13 +1,11 @@
 #pragma once
-#include "AudioFile.hpp"
-#include "AudioBuffer.hpp"
-#include "rubberband/RubberBandStretcher.h"
-
 #include <filesystem>
+#include <vector>
 #include <samplerate.h>
 
 namespace shone::core
 {
+    class AudioFile;
     class AudioBuffer
     {
     public:
