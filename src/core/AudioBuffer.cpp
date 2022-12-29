@@ -1,131 +1,117 @@
-#include <iostream>
-#include <numeric>
-#include <algorithm>
-#include <cmath>
-
 #include "shone/AudioBuffer.hpp"
-#include "shone/Defaults.hpp"
-#include "shone/Mix.hpp"
+#include "shone/AudioFile.hpp"
+#include "shone/SndFileHelper.hpp"
+#include "shone/Downmix.hpp"
+
+#include <iostream>
+#include <cassert>
+#include <numeric>
 
 namespace shone::core
 {
-    AudioBuffer::AudioBuffer(const std::size_t size, int sampleRate) : 
-        m_audioFrames(size),
-        m_sampleRate(sampleRate),
-        m_originalSampleRate(sampleRate),
-        m_originalNumChannels(DEFAULT_NUM_CHANNELS) {}
 
-    AudioBuffer::AudioBuffer(const std::filesystem::path& filePath, int sampleRate) : 
-        m_filePath(filePath),
-        m_sampleRate(sampleRate)
+    AudioBuffer::AudioBuffer(const AudioFile& audioFile, int sampleRate, int numChannels)
+        : m_samples(audioFile.samples())
+        , m_sampleRate(audioFile.sampleRate())
+        , m_numChannels(audioFile.numChannels())
     {
-        if (!std::filesystem::exists(filePath)) 
+        if (sampleRate != audioFile.sampleRate())
         {
-            throw std::runtime_error{"AudioBuffer::AudioBuffer: filePath does not exist."};
+            resample(sampleRate);
         }
 
-        auto audioInfo = SF_INFO{};
-        auto audioFile = openAudioHandle(filePath, audioInfo, SFM_READ);
-        auto sampleData = std::vector<float>(audioInfo.frames * audioInfo.channels);
-        auto samplesRead = sf_read_float(audioFile, sampleData.data(), sampleData.size());
-
-        if (samplesRead != static_cast<int>(sampleData.size())) 
+        if (numChannels != audioFile.numChannels())
         {
-            throw std::runtime_error{"Could not read all required samples in audio file"};
+            mix(numChannels);
         }
-        
-        if (audioInfo.channels < DEFAULT_NUM_CHANNELS) 
-        {
-            m_audioFrames = Mix::mixMonoToStereo(sampleData);
-        }
-        else if (audioInfo.channels > DEFAULT_NUM_CHANNELS)
-        {
-            m_audioFrames = Mix::mixDownToStereo(sampleData, audioInfo.channels);
-        }
-        else 
-        {
-            m_audioFrames = std::vector<AudioFrame>(audioInfo.frames);
-            for (size_t i = 0; i < sampleData.size(); i += DEFAULT_NUM_CHANNELS)
-            {
-                m_audioFrames[i] = AudioFrame{sampleData[i], sampleData[i + 1]};
-            }
-        }
-
-        if (m_originalSampleRate != DEFAULT_SAMPLE_RATE) 
-        {
-            //TODO: Resampling to match sample rate of application..
-        }
-
-        m_originalSampleRate = audioInfo.samplerate;
-        m_originalNumChannels = audioInfo.channels;
-        sf_close(audioFile);
     }
 
-    AudioBuffer::AudioBuffer(const std::vector<AudioFrame>& audioFrames, int sampleRate) : 
-        m_audioFrames(audioFrames),
-        m_sampleRate(sampleRate),
-        m_originalSampleRate(sampleRate),
-        m_originalNumChannels(DEFAULT_NUM_CHANNELS)
+    AudioBuffer::AudioBuffer(const std::vector<float>& samples, int sampleRate, int numChannels)
+        : m_samples(samples)
+        , m_sampleRate(sampleRate)
+        , m_numChannels(numChannels)
     {}
 
-    void AudioBuffer::writeToDisk(const std::filesystem::path& path, int format) const
+    AudioBuffer::AudioBuffer(size_t size, int sampleRate, int numChannels)
+        : m_samples(size)
+        , m_sampleRate(sampleRate)
+        , m_numChannels(numChannels)
+    {}
+
+    void AudioBuffer::writeToDisk(std::filesystem::path& filePath, int format)
     {
         auto audioInfo = SF_INFO{};
-        audioInfo.format = format;
-        audioInfo.channels = DEFAULT_NUM_CHANNELS;
+        auto audioHandle = SndFileHelper::openAudioHandle(filePath, audioInfo, SFM_WRITE);
+
         audioInfo.samplerate = m_sampleRate;
+        audioInfo.channels = m_numChannels;
+        audioInfo.format = format;
+
+        sf_write_float(audioHandle, m_samples.data(), m_samples.size());
+        sf_close(audioHandle);
+    }
+
+    void AudioBuffer::resample(int newSampleRate, int interpolationMode)
+    {
+        auto resampledData = std::vector<float>(m_samples.size());
+        auto data = SRC_DATA{};
+        data.data_in = m_samples.data();
+        data.input_frames = m_samples.size();
+        data.data_out = resampledData.data();
+        data.output_frames = resampledData.size();
+        data.src_ratio = static_cast<float>(newSampleRate) / m_sampleRate;
+
+        auto error = src_simple(&data, interpolationMode, m_numChannels);
+        if (error)
+        {
+            std::cerr << "Failed to resample AudioBuffer: " << src_strerror(error) << '\n';
+            return;
+        }
+
+        m_samples = resampledData;
+        m_sampleRate = newSampleRate;
+    }
+
+    void AudioBuffer::mix(int newNumChannels)
+    {
+        if (m_numChannels == newNumChannels) { return; }
         
-        auto audioFile = openAudioHandle(path, audioInfo, SFM_WRITE);
-        sf_writef_float(audioFile, m_audioFrames.data()->data(),  m_audioFrames.size());
-        sf_close(audioFile);
-    }
-
-    const std::optional<std::filesystem::path> AudioBuffer::filePath() const 
-    {
-        return m_filePath;
-    }
-    
-    const std::vector<AudioFrame>& AudioBuffer::audioFrames() const 
-    {
-        return m_audioFrames;
-    }
-    
-    int AudioBuffer::originalSampleRate() const 
-    {
-        return m_originalSampleRate;
-    }
-
-    int AudioBuffer::originalNumChannels() const 
-    {
-        return m_originalNumChannels;
-    }
-    
-    SNDFILE* AudioBuffer::openAudioHandle(const std::filesystem::path& filePath, SF_INFO& info, int mode) const
-    {
-        auto nativeFilePath = filePath.c_str();
-        SNDFILE* audioFile = nullptr;
-        
-        if (std::is_same_v<std::filesystem::path::value_type, char>) 
+        if (m_numChannels == 1 && newNumChannels == 2)
         {
-            audioFile = sf_open(nativeFilePath, mode, &info);
+            Downmix::mixMonoToStereo(m_samples, numFrames());
         }
-        #ifdef WIN32
-        else if (std::is_same_v<std::filesystem::path::value_type, wchar_t>) 
+        else if (m_numChannels == 2 && newNumChannels == 1)
         {
-            audioFile = sf_wchar_open(nativeFilePath, mode, &info);
+            Downmix::mixStereoToMono(m_samples, numFrames());
         }
-        #endif
-        else 
+        else if (m_numChannels == 6 && newNumChannels == 2)
         {
-            throw std::domain_error{"Unknown/unsupported file path.\n"};
+            Downmix::mixSurroundToStereo(m_samples, numFrames());
         }
-
-        if (sf_error(audioFile))
+        else
         {
-            throw std::runtime_error{std::string{"SndFile error in AudioBuffer::openAudioBuffer: "} + sf_strerror(audioFile)};
+            std::cerr << "Failed to downmix AudioBuffer: unsupported downmix\n";
+            return;
         }
-
-        return audioFile;
     }
 
+    const std::vector<float>& AudioBuffer::samples() const
+    {
+        return m_samples;
+    }
+
+    int AudioBuffer::sampleRate() const
+    {
+        return m_sampleRate;
+    }
+
+    int AudioBuffer::numChannels() const
+    {
+        return m_numChannels;
+    }
+
+    int AudioBuffer::numFrames() const
+    {
+        return m_samples.size() / m_numChannels;
+    }
 }

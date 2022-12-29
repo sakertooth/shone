@@ -1,12 +1,12 @@
-#include "shone/RubberbandHelper.hpp"
-#include "shone/AudioBuffer.hpp"
+#include "shone/AudioFile.hpp"
 #include <cassert>
 #include <iostream>
 
-int main()
+int main(int argc, char** argv)
 {
-    // original sample rate = 132000, duration = 5s (660000 samples), 1 channel
-    const auto filePath = "files/Sine_wave_440.wav";
-    const auto audioBuffer = shone::core::AudioBuffer{filePath};
-    audioBuffer.writeToDisk("files/Sine_wave_440_read_verify.wav", SF_FORMAT_WAV | SF_FORMAT_PCM_24);
+    auto audioFile = shone::core::AudioFile{"Sine_wave_440.wav"};
+    assert(audioFile.sampleRate() == 132000);
+    assert(audioFile.numChannels() == 1);
+    assert(audioFile.samples().size() == 660000);
+    return EXIT_SUCCESS;
 }

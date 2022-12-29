@@ -1,33 +1,29 @@
 #pragma once
-#include "AudioFrame.hpp"
-#include <vector>
 #include <filesystem>
-#include <optional>
-#include <sndfile.h>
+#include <vector>
+#include <samplerate.h>
 
 namespace shone::core
 {
+    class AudioFile;
     class AudioBuffer
     {
     public:
-        AudioBuffer(const std::filesystem::path& filePath, int sampleRate);
-        AudioBuffer(const std::vector<AudioFrame>& frames, int sampleRate);
-        AudioBuffer(std::size_t size, int sampleRate);
+        AudioBuffer(const AudioFile& audioFile, int sampleRate, int numChannels);
+        AudioBuffer(const std::vector<float>& samples, int sampleRate, int numChannels);
+        AudioBuffer(size_t size, int sampleRate, int numChannels);
 
-        void writeToDisk(const std::filesystem::path& path, int format) const;
+        void writeToDisk(std::filesystem::path& filePath, int mode);
+        void resample(int newSampleRate, int interpolatonMode = SRC_SINC_MEDIUM_QUALITY);
+        void mix(int newNumChannels);
 
-        const std::optional<std::filesystem::path> filePath() const;
-        const std::vector<AudioFrame>& audioFrames() const;
+        const std::vector<float>& samples() const;
         int sampleRate() const;
-        int originalSampleRate() const;
-        int originalNumChannels() const;
+        int numChannels() const;
+        int numFrames() const;
     private:
-        std::optional<std::filesystem::path> m_filePath;
-        std::vector<AudioFrame> m_audioFrames;
+        std::vector<float> m_samples;
         int m_sampleRate = 0;
-        int m_originalSampleRate = 0;
-        int m_originalNumChannels = 0;
-    private:
-        SNDFILE* openAudioHandle(const std::filesystem::path& filePath, SF_INFO& info, int mode) const;
+        int m_numChannels = 0;
     };
 }
