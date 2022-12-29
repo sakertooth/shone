@@ -1,4 +1,4 @@
-#include "shone/Downmix.hpp"
+#include "shone/core/Downmix.hpp"
 #include <stdexcept>
 #include <algorithm>
 #include <cassert>

@@ -1,4 +1,4 @@
-#include "shone/SndFileHelper.hpp"
+#include "shone/core/SndFileHelper.hpp"
 
 namespace shone::core
 {

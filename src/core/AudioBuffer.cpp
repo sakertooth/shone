@@ -1,7 +1,7 @@
-#include "shone/AudioBuffer.hpp"
-#include "shone/AudioFile.hpp"
-#include "shone/SndFileHelper.hpp"
-#include "shone/Downmix.hpp"
+#include "shone/core/AudioBuffer.hpp"
+#include "shone/core/AudioFile.hpp"
+#include "shone/core/SndFileHelper.hpp"
+#include "shone/core/Downmix.hpp"
 
 #include <iostream>
 #include <cassert>
