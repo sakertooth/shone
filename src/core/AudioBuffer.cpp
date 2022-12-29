@@ -74,50 +74,25 @@ namespace shone::core
 
     void AudioBuffer::mix(int newNumChannels)
     {
-        if (newNumChannels <= 0 || m_numChannels == newNumChannels)
+        if (m_numChannels == newNumChannels) { return; }
+        
+        if (m_numChannels == 1 && newNumChannels == 2)
         {
-            std::cerr << "Failed to mix AudioBuffer: invalid # of channels\n";
+            Downmix::mixMonoToStereo(m_samples, numFrames());
+        }
+        else if (m_numChannels == 2 && newNumChannels == 1)
+        {
+            Downmix::mixStereoToMono(m_samples, numFrames());
+        }
+        else if (m_numChannels == 6 && newNumChannels == 2)
+        {
+            Downmix::mixSurroundToStereo(m_samples, numFrames());
+        }
+        else
+        {
+            std::cerr << "Failed to downmix AudioBuffer: unsupported downmix\n";
             return;
         }
-
-        // Only support upmixing/downmixing for mono/stereo for now
-        if (!(newNumChannels == 1 || newNumChannels == 2))
-        {
-            std::cerr << "Failed to mix AudioBuffer: Unsupported upmix/downmix\n";
-            return;
-        }
-
-        auto result = std::vector<float>(numFrames() * newNumChannels);
-        for (int frameIndex = 0; frameIndex < numFrames(); ++frameIndex)
-        {
-            for (int coefficientIndex = 0; coefficientIndex < newNumChannels; ++coefficientIndex)
-            {
-                auto finalSampleValue = 0.0f;
-                for (int sampleIndex = 0; sampleIndex < m_numChannels; ++sampleIndex)
-                {
-                    auto sample = m_samples[frameIndex * m_numChannels + sampleIndex];
-                    auto coefficientValue = 0.0f;
-
-                    if (newNumChannels == 1)
-                    {
-                        auto coefficients = Downmix::monoCoefficients();
-                        coefficientValue = coefficients[sampleIndex];
-                    }
-                    else if (newNumChannels == 2)
-                    {
-                        auto coefficients = Downmix::stereoCoefficients();
-                        coefficientValue = coefficients[coefficientIndex][sampleIndex];
-                    }
-
-                    finalSampleValue += sample * coefficientValue;
-                }
-
-                result[frameIndex * newNumChannels + coefficientIndex] = finalSampleValue;
-            }
-        }
-
-        m_samples = result;
-        m_numChannels = newNumChannels;
     }
 
     const std::vector<float>& AudioBuffer::samples() const

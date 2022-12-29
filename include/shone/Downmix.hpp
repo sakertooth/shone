@@ -1,35 +1,39 @@
 #pragma once
+#include <vector>
 #include <array>
-#include <cstddef>
 
-namespace shone::core 
+namespace shone::core
 {
     /**
-     * @brief 
-     * Downmixing support for AudioBuffer.
-     * Only supports downmixing to stereo and mono for now.
+     * @brief Support for downmixing using AudioBuffer.
+     *
      */
-    class Downmix 
+    class Downmix
     {
     public:
-        // The CoefficientMatrix follows this order
-        enum class InputChannels 
-        {
-            Left,
-            Right,
-            Center,
-            SurroundLeft,
-            SurroundRight,
-            BackLeft,
-            BackRight,
-            MaxNumChannels
-        };
+        /**
+         * @brief Upmix a mono signal with numFrames frames into a stereo signal.
+         * 
+         * @param samples 
+         * @param numFrames 
+         * @return std::vector<float> 
+         */
+        static std::vector<float> mixMonoToStereo(std::vector<float>& samples, int numFrames);
 
-        template<size_t N>
-        using CoefficientMatrix = std::array<std::array<float, static_cast<size_t>(InputChannels::MaxNumChannels)>, N>;
-        using CoefficientArray = std::array<float, static_cast<size_t>(InputChannels::MaxNumChannels)>;
+        /**
+         * @brief Downmix a stereo signal with numFrames frames into a mono signal.
+         * 
+         * @param samples 
+         * @return std::vector<float> 
+         */
+        static std::vector<float> mixStereoToMono(std::vector<float>& samples, int numFrames);
 
-        static const CoefficientArray& monoCoefficients();
-        static const CoefficientMatrix<2>& stereoCoefficients();
+        /**
+         * @brief Downmix a 5.1 surround signal with numFrames frames into a stereo signal.
+         * 
+         * @param samples 
+         * @return std::vector<float> 
+         */
+        static std::vector<float> mixSurroundToStereo(std::vector<float>& samples, int numFrames);
     };
 }
