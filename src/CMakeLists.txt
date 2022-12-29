@@ -1,3 +1,8 @@
+find_package(SndFile REQUIRED)
+find_package(Aubio REQUIRED)
+find_package(Rubberband REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+
 add_library(shone_core STATIC core/AudioFile.cpp core/AudioBuffer.cpp core/SndFileHelper.cpp core/Downmix.cpp)
 target_include_directories(shone_core PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(shone_core PUBLIC SndFile::sndfile)

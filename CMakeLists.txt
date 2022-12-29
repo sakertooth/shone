@@ -7,11 +7,6 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-find_package(SndFile REQUIRED)
-find_package(Aubio REQUIRED)
-find_package(Rubberband REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
-
 add_subdirectory(lib)
 add_subdirectory(src)
 add_subdirectory(tests)
