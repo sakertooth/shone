@@ -4,4 +4,4 @@ target_link_libraries(shone_core PUBLIC SndFile::sndfile)
 add_library(shone::core ALIAS shone_core)
 
 add_executable(shone Main.cpp)
-target_link_libraries(shone PRIVATE shone_core)
+target_link_libraries(shone PRIVATE shone_core cxxopts::cxxopts)

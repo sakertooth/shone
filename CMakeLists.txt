@@ -12,6 +12,7 @@ find_package(Aubio REQUIRED)
 find_package(Rubberband REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
+add_subdirectory(lib)
 add_subdirectory(src)
 add_subdirectory(tests)
 
