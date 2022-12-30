@@ -25,5 +25,4 @@ add_library(shone::core ALIAS shone_core)
 add_executable(shone Main.cpp)
 target_link_libraries(shone PRIVATE
     shone::core
-    cxxopts::cxxopts
 )
