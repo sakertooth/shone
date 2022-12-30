@@ -6,6 +6,7 @@ enable_testing()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_AUTOMOC ON)
 
 find_package(SndFile REQUIRED)
 find_package(Aubio REQUIRED)
@@ -34,11 +35,12 @@ add_library(shone::core ALIAS shone_core)
 
 # Create GUI executable
 add_executable(shone
-    src/gui/MainWindow.cpp
+    src/Main.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/MainWindow.cpp
+    ${CMAKE_SOURCE_DIR}/include/shone/gui/MainWindow.hpp
 )
 
 target_link_libraries(shone PRIVATE shone::core Qt5::Widgets)
-
 # Add tests
 add_subdirectory(tests)
 
