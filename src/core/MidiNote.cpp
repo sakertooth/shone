@@ -10,7 +10,7 @@ namespace shone::gui
 {
     constexpr auto REFERENCE_VALUE = 60;
     constexpr auto MIDDLE_C_PITCH = 261.63f;
-    const auto MIDDLE_C = "C4"_mnote;
+    const auto MIDDLE_C = MidiNote{"C4"};
     const auto NOTE_LETTERS = std::array<std::string, 12>{"C", "C#", "D", "D#" "E", "F", "F#", "G", "G#" "A", "A#", "B"};
 
     MidiNote::MidiNote(int number) : m_number(number)
@@ -54,13 +54,8 @@ namespace shone::gui
         return m_frequency;
     }
 
-    std::string MidiNote::toString() const
+    std::string MidiNote::name() const
     {
         return m_name;
-    }
-
-    MidiNote operator "" _mnote(const char* literal, std::size_t length)
-    {
-        return MidiNote{literal};
     }
 }
