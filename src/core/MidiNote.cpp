@@ -28,7 +28,7 @@ namespace shone::gui
 
     MidiNote::MidiNote(std::string name) : m_name(name)
     {
-        assert(name.length() < 2 && "Invalid length of MIDI note name");
+        assert(name.length() >= 2 && "Invalid length of MIDI note name");
         auto octave = std::stoi(name.substr(1));
 
         const auto octaveDistance = octave - 4;
