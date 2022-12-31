@@ -7,7 +7,7 @@ namespace shone::gui
     {
     public:
         MidiNote(int number);
-        MidiNote(std::string name);
+        MidiNote(const std::string& name);
 
         bool isSharp() const;
            

@@ -11,7 +11,7 @@ namespace shone::gui
     constexpr auto REFERENCE_VALUE = 60;
     constexpr auto MIDDLE_C_PITCH = 261.63f;
     const auto MIDDLE_C = MidiNote{"C4"};
-    const auto NOTE_LETTERS = std::array<std::string, 12>{"C", "C#", "D", "D#" "E", "F", "F#", "G", "G#" "A", "A#", "B"};
+    const auto NOTE_LETTERS = std::array<std::string, 12>{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
     MidiNote::MidiNote(int number) : m_number(number)
     {
@@ -26,11 +26,11 @@ namespace shone::gui
         m_frequency = MIDDLE_C_PITCH * std::exp2(distanceFromReference / 12.0f);
     }
 
-    MidiNote::MidiNote(std::string name) : m_name(name)
+    MidiNote::MidiNote(const std::string& name) : m_name(name)
     {
         assert(name.length() >= 2 && "Invalid length of MIDI note name");
-        auto octave = std::stoi(name.substr(1));
 
+        const auto octave = std::stoi(name.substr(name[1] == '#' ? 2 : 1));
         const auto octaveDistance = octave - 4;
         const auto noteDistance = std::distance(NOTE_LETTERS.begin(), std::find(NOTE_LETTERS.begin(), NOTE_LETTERS.end(), name.substr(0, 1)));
         const auto distanceFromReference = octaveDistance * 12 + noteDistance;
