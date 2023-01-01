@@ -3,10 +3,10 @@
 
 namespace shone::gui
 {
-    class Piano : public QWidget
+    class PianoRoll : public QWidget
     {
     public:
-        Piano(QWidget* parent = nullptr);
+        PianoRoll(QWidget* parent = nullptr);
         void paintEvent(QPaintEvent*) override;
         QSize sizeHint() const override;
     };

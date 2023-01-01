@@ -4,7 +4,7 @@
 #include <array>
 #include <iostream>
 
-#include "shone/gui/Piano.hpp"
+#include "shone/gui/PianoRoll.hpp"
 #include "shone/core/MidiNote.hpp"
 
 namespace shone::gui
@@ -13,11 +13,11 @@ namespace shone::gui
     constexpr auto WHITE_KEY_HEIGHT = 25;
     constexpr auto BLACK_KEY_WIDTH = 55;
     constexpr auto BLACK_KEY_HEIGHT = 15;
-    constexpr auto PIANO_HEIGHT = 75 * WHITE_KEY_HEIGHT;
+    constexpr auto PIANO_ROLL_HEIGHT = 75 * WHITE_KEY_HEIGHT;
 
-    Piano::Piano(QWidget* parent) : QWidget(parent) {}
+    PianoRoll::PianoRoll(QWidget* parent) : QWidget(parent) {}
 
-    void Piano::paintEvent(QPaintEvent*)
+    void PianoRoll::paintEvent(QPaintEvent*)
     {
         auto painter = QPainter{this};
         painter.setRenderHint(QPainter::Antialiasing, true);
@@ -65,8 +65,8 @@ namespace shone::gui
         }
     }
 
-    QSize Piano::sizeHint() const
+    QSize PianoRoll::sizeHint() const
     {
-        return QSize{WHITE_KEY_WIDTH, PIANO_HEIGHT};
+        return QSize{WHITE_KEY_WIDTH, PIANO_ROLL_HEIGHT};
     }
 }
