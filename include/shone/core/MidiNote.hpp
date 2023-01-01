@@ -12,8 +12,10 @@ namespace shone::gui
         bool isSharp() const;
            
         int number() const;
+        int octave() const;
         float frequency() const;
-        std::string name() const;
+        const std::string& name() const;
+        std::string noteLetter() const;
 
     private:
         int m_number;
