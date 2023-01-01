@@ -18,6 +18,7 @@ add_library(shone_core STATIC
     src/core/AudioBuffer.cpp
     src/core/AudioFile.cpp
     src/core/Downmix.cpp
+    src/core/MidiNote.cpp
     src/core/SndFileHelper.cpp
 )
 
@@ -36,11 +37,19 @@ add_library(shone::core ALIAS shone_core)
 # Create GUI executable
 add_executable(shone
     src/Main.cpp
+
+    ${CMAKE_SOURCE_DIR}/src/gui/MainGui.cpp
+    ${CMAKE_SOURCE_DIR}/include/shone/gui/MainGui.hpp
+
     ${CMAKE_SOURCE_DIR}/src/gui/MainWindow.cpp
     ${CMAKE_SOURCE_DIR}/include/shone/gui/MainWindow.hpp
+
+    ${CMAKE_SOURCE_DIR}/src/gui/PianoRoll.cpp
+    ${CMAKE_SOURCE_DIR}/include/shone/gui/PianoRoll.hpp
 )
 
 target_link_libraries(shone PRIVATE shone::core Qt5::Widgets)
+
 # Add tests
 add_subdirectory(tests)
 
