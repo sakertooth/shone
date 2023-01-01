@@ -1,5 +1,4 @@
 #include <QApplication>
-
 #include "shone/gui/MainWindow.hpp"
 
 int main(int argc, char** argv)
